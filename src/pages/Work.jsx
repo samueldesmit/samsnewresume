@@ -7,17 +7,19 @@ import alphamen from '../assets/the alpha men.jpg'
 import spriet from '../assets/spriet.jpg'
 import kassl from '../assets/kassl.webp'
 import graylabel from '../assets/gray label.webp'
+import laminaatEnParket from '../assets/laminaat-en-parket.webp'
 
 const CASES = [
-  { title: 'Jollein', img: jollein, desc: 'Baby and children\'s products webshop for B2B and B2C. Fully custom build with focus on product discovery and conversion.' },
-  { title: 'Eichholtz', img: eichholtz, desc: 'Luxury interior and furniture webshop for the Miami market. Elegant product presentation with B2C functionality.' },
-  { title: 'Chocolatemakers', img: chocolatemakers, desc: 'Custom built artisan chocolate webshop with a warm and inviting design. Including product configurator for personalized chocolate packages.' },
-  { title: 'Idyl', img: idyl, desc: 'Fully custom premium jewelry webshop with sleek design and focus on user experience. Optimized for conversion.' },
-  { title: 'Ananda', img: ananda, desc: 'Wellness and lifestyle webshop with calming design. Optimized checkout flow and integrated email marketing.' },
-  { title: 'Alphamen', img: alphamen, desc: 'Custom built men\'s lifestyle and grooming webshop. Sleek modern design with focus on product presentation.' },
-  { title: 'Spriet', img: spriet, desc: 'Modern Dutch webshop with focus on sustainability. Clean design with extensive product filtering.' },
-  { title: 'Kassl', img: kassl, desc: 'High-end fashion webshop for an international brand. Minimalist design with seamless checkout experience.' },
-  { title: 'Graylabel', img: graylabel, desc: 'Sustainable children\'s clothing webshop with organic materials. Clean design with focus on brand identity.' },
+  { title: 'Chocolatemakers', img: chocolatemakers, url: 'https://chocolatemakers.com/', desc: 'Custom built artisan chocolate webshop with a warm and inviting design. Including product configurator for personalized chocolate packages.' },
+  { title: 'Idyl', img: idyl, url: 'https://idyl.com/', desc: 'Fully custom premium jewelry webshop with sleek design and focus on user experience. Optimized for conversion.' },
+  { title: 'Laminaat en Parket', img: laminaatEnParket, url: 'https://www.laminaatenparket.nl/', desc: 'Flooring specialist webshop for laminate and parquet. Custom built with focus on product selection and material samples.' },
+  { title: 'Jollein', img: jollein, url: 'https://jollein.nl/', desc: 'Baby and children\'s products webshop for B2B and B2C. Fully custom build with focus on product discovery and conversion.' },
+  { title: 'Ananda', img: ananda, url: 'https://ananda.nl/', desc: 'Wellness and lifestyle webshop with calming design. Optimized checkout flow and integrated email marketing.' },
+  { title: 'Eichholtz Miami', img: eichholtz, url: 'https://eichholtzmiami.com/', desc: 'Luxury interior and furniture webshop for the Miami market. Elegant product presentation with B2C functionality.' },
+  { title: 'Alphamen', img: alphamen, url: 'https://thealphamen.nl/', desc: 'Custom built men\'s lifestyle and grooming webshop. Sleek modern design with focus on product presentation.' },
+  { title: 'Graylabel', img: graylabel, url: 'https://gray-label.com/', desc: 'Sustainable children\'s clothing webshop with organic materials. Clean design with focus on brand identity.' },
+  { title: 'Spriet', img: spriet, url: 'https://hispriet.com/', desc: 'Modern Dutch webshop with focus on sustainability. Clean design with extensive product filtering.' },
+  { title: 'Kassl', img: kassl, url: 'https://kassleditions.com/', desc: 'High-end fashion webshop for an international brand. Minimalist design with seamless checkout experience.' },
 ]
 
 export default function Work() {
@@ -39,7 +41,7 @@ export default function Work() {
           </div>
         </div>
         {CASES.map(c => (
-          <div key={c.title} className="case-card">
+          <a key={c.title} href={c.url} target="_blank" rel="noopener noreferrer" className="case-card">
             <div className="case-img-wrap">
               <img src={c.img} alt={c.title} loading="lazy" />
             </div>
@@ -47,7 +49,7 @@ export default function Work() {
               <h3>{c.title}</h3>
               <p>{c.desc}</p>
             </div>
-          </div>
+          </a>
         ))}
       </div>
     </div>

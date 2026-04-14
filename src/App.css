@@ -25,6 +25,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  max-width: 1440px;
+  margin: 0 auto;
   padding: 20px 32px;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 100%);
   pointer-events: none;
@@ -120,7 +122,7 @@
 .page-about,
 .page-work,
 .page-contact {
-  max-width: 1100px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 120px 32px 80px;
 }
@@ -139,7 +141,6 @@
   font-size: 16px;
   color: rgba(255, 255, 255, 0.5);
   line-height: 1.6;
-  max-width: 560px;
   margin: 0 0 48px;
 }
 
@@ -167,12 +168,11 @@
   font-size: clamp(16px, 2vw, 22px);
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.75);
-  max-width: 700px;
 }
 
 .about-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 48px;
   margin-bottom: 64px;
 }
@@ -249,6 +249,9 @@
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(4px);
   transition: border-color 0.3s, transform 0.3s;
+  color: inherit;
+  text-decoration: none;
+  display: block;
 }
 
 .case-card:hover {
@@ -332,12 +335,10 @@
   font-size: 18px;
   color: rgba(255, 255, 255, 0.6);
   line-height: 1.6;
-  max-width: 560px;
   margin: 0 0 40px;
 }
 
 .contact-form {
-  max-width: 560px;
   display: flex;
   flex-direction: column;
   gap: 20px;

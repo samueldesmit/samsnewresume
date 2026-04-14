@@ -1,22 +1,22 @@
 import profilePic from '../assets/sam_profile_picture.png'
 
-const SKILLS = ['HTML', 'CSS / Sass', 'Tailwind', 'React', 'Javascript', 'Make.com', 'Figma', 'N8N']
-const TOOLS = ['Shopify', 'Klaviyo', 'Jira', 'Confluence', 'Claude', 'Cursor', 'Shopify Flow']
+const TOOLKIT = ['HTML', 'CSS / Sass', 'Tailwind', 'React', 'Javascript', 'Shopify', 'Shopify Flow', 'Klaviyo', 'Make.com', 'N8N', 'Figma', 'Jira', 'Confluence', 'Claude', 'Cursor']
 
 export default function About() {
   return (
     <div className="page-about">
       <div className="about-intro">
+        <h1 className="page-title">About</h1>
         <div className="about-hero">
           <div>
-            <h1 className="page-title">About</h1>
             <p className="about-text">
-              Hey, I'm Sam de Smit. I'm a front-end developer with a passion for building
-              visually appealing and functional websites. With my expertise in HTML, CSS,
-              JavaScript and React, I create websites that are not only beautiful but also
-              perform optimally. I have extensive experience in the e-commerce industry,
-              particularly working with Shopify, and I enjoy collaborating with clients to
-              translate their vision into effective, user-friendly solutions.
+              Hey, I'm Sam de Smit, a Shopify developer and consultant helping brands
+              build, optimize and scale their online stores. From custom theme development
+              and app integrations to conversion optimization and workflow automation, I
+              help businesses get the most out of the Shopify platform. Whether you need a
+              full store build from scratch, a redesign or hands-on technical support, I
+              work closely with clients to deliver high-performing, user-friendly webshops
+              that drive results.
             </p>
           </div>
           <img src={profilePic} alt="Sam de Smit" className="about-photo" />
@@ -25,15 +25,9 @@ export default function About() {
 
       <div className="about-grid">
         <div>
-          <h2 className="section-label">Skills</h2>
+          <h2 className="section-label">My Toolkit</h2>
           <div className="tag-list">
-            {SKILLS.map(s => <span key={s} className="tag">{s}</span>)}
-          </div>
-        </div>
-        <div>
-          <h2 className="section-label">Tools</h2>
-          <div className="tag-list">
-            {TOOLS.map(t => <span key={t} className="tag">{t}</span>)}
+            {TOOLKIT.map(t => <span key={t} className="tag">{t}</span>)}
           </div>
         </div>
       </div>

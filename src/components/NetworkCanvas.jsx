@@ -60,11 +60,56 @@ export default function NetworkCanvas({ dimmed = false }) {
     window.addEventListener('resize', resize)
 
     const smoothMouse = { x: -9999, y: -9999 }
+    const isMobile = w < 768
+    const fakeTarget = { x: w / 2, y: h / 2 }
+    let fakeInterval = null
+
+    let userTouching = false
+    let touchTimeout = null
+
+    if (isMobile) {
+      const pickTarget = () => {
+        if (!userTouching) {
+          fakeTarget.x = 80 + Math.random() * (w - 160)
+          fakeTarget.y = 80 + Math.random() * (h - 160)
+        }
+      }
+      pickTarget()
+      mouseRef.current = { x: fakeTarget.x, y: fakeTarget.y }
+      fakeInterval = setInterval(pickTarget, 3000)
+    }
+
+    function onTouchStart(e) {
+      if (!isMobile) return
+      const t = e.touches[0]
+      userTouching = true
+      mouseRef.current = { x: t.clientX, y: t.clientY }
+      fakeTarget.x = t.clientX
+      fakeTarget.y = t.clientY
+      if (touchTimeout) clearTimeout(touchTimeout)
+    }
+
+    function onTouchMove(e) {
+      if (!isMobile) return
+      const t = e.touches[0]
+      mouseRef.current = { x: t.clientX, y: t.clientY }
+      fakeTarget.x = t.clientX
+      fakeTarget.y = t.clientY
+    }
+
+    function onTouchEnd() {
+      if (!isMobile) return
+      touchTimeout = setTimeout(() => { userTouching = false }, 4000)
+    }
 
     function onMouseMove(e) {
-      mouseRef.current = { x: e.clientX, y: e.clientY }
+      if (!isMobile) mouseRef.current = { x: e.clientX, y: e.clientY }
     }
+
     window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('touchstart', onTouchStart)
+    window.addEventListener('touchmove', onTouchMove)
+    window.addEventListener('touchend', onTouchEnd)
 
     function animate() {
       ctx.clearRect(0, 0, w, h)
@@ -72,6 +117,10 @@ export default function NetworkCanvas({ dimmed = false }) {
       const mouse = mouseRef.current
       const connectionDist = w < 768 ? 160 : 220
 
+      if (isMobile && !userTouching) {
+        mouse.x += (fakeTarget.x - mouse.x) * 0.02
+        mouse.y += (fakeTarget.y - mouse.y) * 0.02
+      }
       smoothMouse.x += (mouse.x - smoothMouse.x) * 0.1
       smoothMouse.y += (mouse.y - smoothMouse.y) * 0.1
 
@@ -176,7 +225,12 @@ export default function NetworkCanvas({ dimmed = false }) {
     return () => {
       window.removeEventListener('resize', resize)
       window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('touchend', onTouchEnd)
       cancelAnimationFrame(animRef.current)
+      if (fakeInterval) clearInterval(fakeInterval)
+      if (touchTimeout) clearTimeout(touchTimeout)
     }
   }, [])
 
