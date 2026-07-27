@@ -121,7 +121,8 @@
 /* ── Inner Pages ── */
 .page-about,
 .page-work,
-.page-contact {
+.page-contact,
+.page-wekker {
   max-width: 1440px;
   margin: 0 auto;
   padding: 120px 32px 80px;
@@ -438,6 +439,107 @@
 .contact-link:hover {
   border-color: #b4ff39;
   color: #b4ff39;
+}
+
+/* ── Wekker ── */
+.wekker-panel {
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+.wekker-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+.wekker-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+.wekker-status.is-online .wekker-dot {
+  background: #b4ff39;
+  box-shadow: 0 0 12px rgba(180, 255, 57, 0.6);
+}
+
+.wekker-panel input[type='time'] {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  padding: 10px 16px;
+  outline: none;
+  color-scheme: dark;
+}
+
+.wekker-panel input[type='time']:focus {
+  border-color: #b4ff39;
+}
+
+.wekker-liedje {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wekker-stap {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.wekker-stap:hover {
+  border-color: #b4ff39;
+  color: #b4ff39;
+}
+
+.wekker-liedje-naam {
+  flex: 1;
+  text-align: center;
+  font-weight: 700;
+  font-size: 17px;
+  color: #fff;
+}
+
+.wekker-liedje-naam small {
+  display: block;
+  font-weight: 400;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 2px;
+}
+
+.wekker-panel input[type='range'] {
+  accent-color: #b4ff39;
+  width: 100%;
+}
+
+.wekker-panel .form-message {
+  margin: 0;
 }
 
 /* ── 404 ── */
