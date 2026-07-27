@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import About from './pages/About'
 import Work from './pages/Work'
 import Contact from './pages/Contact'
+import Wekker from './pages/Wekker'
 import NotFound from './pages/NotFound'
 import './App.css'
 
@@ -15,6 +16,7 @@ function App() {
         <Route path="about" element={<About />} />
         <Route path="work" element={<Work />} />
         <Route path="contact" element={<Contact />} />
+        <Route path="wekker" element={<Wekker />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
