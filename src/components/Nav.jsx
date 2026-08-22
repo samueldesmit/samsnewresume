@@ -9,6 +9,7 @@ export default function Nav() {
         <NavLink to="/work">Work</NavLink>
         <NavLink to="/contact">Contact</NavLink>
         <NavLink to="/wekker">Wekker</NavLink>
+        <NavLink to="/zingracer">ZingRacer</NavLink>
       </div>
     </nav>
   )

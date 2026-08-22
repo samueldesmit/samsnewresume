@@ -1,0 +1,871 @@
+<title>ZingRacer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;600&display=swap">
+<style>
+  :root{
+    --sky-top:#0a0d1e;
+    --sky-low:#1b2140;
+    --asfalt:#23262f;
+    --ink:#f2efe6;
+    --ink-dim:#a9a698;
+    --amber:#ffb347;
+    --panel:#12152a;
+    --line:#3a3f58;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--sky-top);
+    color:var(--ink);
+    font-family:'Barlow',system-ui,sans-serif;
+    overflow:hidden;
+    -webkit-user-select:none;user-select:none;
+    touch-action:manipulation;
+  }
+  #stage{position:fixed;inset:0}
+  canvas{display:block;width:100%;height:100%}
+
+  .overlay{
+    position:fixed;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:22px;
+    background:linear-gradient(180deg,var(--sky-top) 0%,var(--sky-low) 100%);
+    padding:24px;text-align:center;z-index:10;
+  }
+  .overlay.hidden{display:none}
+  h1{
+    font-family:'Bungee',cursive;
+    font-size:clamp(34px,9vw,72px);
+    line-height:1;
+    color:var(--amber);
+    text-shadow:0 0 26px rgba(255,179,71,.35), 0 4px 0 rgba(0,0,0,.5);
+    letter-spacing:.02em;
+  }
+  .sub{color:var(--ink-dim);font-size:clamp(14px,2.4vw,18px);max-width:52ch;line-height:1.5}
+  .sub b{color:var(--ink)}
+
+  .cars{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:720px}
+  .carcard{
+    width:150px;padding:14px 10px 12px;border-radius:12px;cursor:pointer;
+    background:var(--panel);border:1px solid var(--line);
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    transition:transform .12s ease,border-color .12s ease;
+  }
+  .carcard:hover,.carcard:focus-visible{transform:translateY(-3px);border-color:var(--amber);outline:none}
+  .carcard canvas{width:110px;height:78px}
+  .carcard .naam{font-family:'Barlow Condensed';font-weight:700;font-size:19px;letter-spacing:.06em;text-transform:uppercase}
+  .carcard .chant{font-size:12px;color:var(--ink-dim);font-style:italic}
+  .carcard .hs{font-size:11px;color:var(--amber);font-family:'Barlow Condensed';letter-spacing:.05em}
+
+  .micnote{font-size:13px;color:var(--ink-dim);display:flex;align-items:center;gap:8px}
+  .micnote .dot{width:8px;height:8px;border-radius:50%;background:#e05353}
+  .micnote.ok .dot{background:#5fd07a}
+
+  /* HUD */
+  #hud{position:fixed;inset:0;pointer-events:none;z-index:5;display:none}
+  #hud.on{display:block}
+  .hud-top{
+    position:absolute;top:0;left:0;right:0;display:flex;
+    justify-content:space-between;align-items:flex-start;padding:14px 18px;
+    font-family:'Barlow Condensed';
+  }
+  .hud-box{background:rgba(10,13,30,.55);border:1px solid rgba(58,63,88,.6);border-radius:10px;padding:6px 14px;backdrop-filter:blur(4px)}
+  .hud-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim)}
+  .hud-val{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.05}
+  .hud-val small{font-size:14px;font-weight:600;color:var(--ink-dim)}
+  #tijd.warn{color:#ff7a6b}
+
+  #chant{
+    position:absolute;left:50%;top:16%;transform:translateX(-50%);
+    font-family:'Bungee';font-size:clamp(22px,6vw,44px);
+    color:var(--ink);opacity:.25;white-space:nowrap;
+    text-shadow:0 0 18px rgba(255,179,71,.0);
+    transition:opacity .15s;max-width:94vw;overflow:hidden;text-overflow:clip;
+  }
+  #chant.zingt{opacity:1;color:var(--amber);text-shadow:0 0 22px rgba(255,179,71,.45)}
+
+  /* pitch meter */
+  #meter{
+    position:absolute;right:16px;top:50%;transform:translateY(-50%);
+    width:14px;height:42vh;border-radius:8px;background:rgba(10,13,30,.55);
+    border:1px solid rgba(58,63,88,.6);overflow:hidden;
+  }
+  #meterfill{
+    position:absolute;bottom:0;left:0;right:0;height:0%;
+    background:linear-gradient(180deg,#ff7a6b,var(--amber) 55%,#5fd07a);
+  }
+  #meterdot{position:absolute;left:-4px;right:-4px;height:3px;background:var(--ink);border-radius:2px;bottom:0;opacity:0}
+
+  /* end screen */
+  #eind .score{font-family:'Bungee';font-size:clamp(40px,12vw,90px);color:var(--ink);line-height:1}
+  #eind .score small{font-size:.35em;color:var(--ink-dim)}
+  .record{font-family:'Barlow Condensed';font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);font-size:20px}
+  .stats{display:flex;gap:26px;justify-content:center;font-family:'Barlow Condensed';color:var(--ink-dim)}
+  .stats b{display:block;font-size:24px;color:var(--ink);font-variant-numeric:tabular-nums}
+  .knoppen{display:flex;gap:12px;pointer-events:auto}
+  button{
+    font-family:'Barlow Condensed';font-weight:700;font-size:18px;letter-spacing:.08em;
+    text-transform:uppercase;padding:12px 26px;border-radius:10px;cursor:pointer;
+    border:1px solid var(--line);background:var(--panel);color:var(--ink);
+  }
+  button.primair{background:var(--amber);color:#1a1206;border-color:var(--amber)}
+  button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+  #testpaneel{display:flex;flex-direction:column;align-items:center;gap:8px;width:min(340px,80vw)}
+  #testpaneel.hidden{display:none}
+  .testbalk{width:100%;height:14px;border-radius:8px;background:var(--panel);border:1px solid var(--line);overflow:hidden}
+  #testvol{height:100%;width:0%;background:linear-gradient(90deg,#ff7a6b,var(--amber) 55%,#5fd07a);transition:width .08s linear}
+  .testinfo{display:flex;justify-content:space-between;width:100%;font-family:'Barlow Condensed';font-size:17px;letter-spacing:.04em}
+  .testinfo #testtoon{color:var(--ink)}
+  .testinfo #testkmh{color:var(--amber);font-weight:700}
+  #aftel{
+    position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:8;
+    font-family:'Bungee';font-size:clamp(70px,20vw,160px);color:var(--amber);
+    text-shadow:0 0 40px rgba(255,179,71,.5);pointer-events:none;
+  }
+  #stadbanner{
+    position:fixed;left:50%;top:32%;transform:translateX(-50%);z-index:7;
+    font-family:'Bungee';font-size:clamp(34px,9vw,70px);color:#fff;
+    text-shadow:0 3px 0 #1962ad, 0 0 30px rgba(25,98,173,.6);
+    opacity:0;transition:opacity .5s;pointer-events:none;white-space:nowrap;
+  }
+  #stadbanner.zichtbaar{opacity:1}
+  @media (prefers-reduced-motion: reduce){
+    .carcard{transition:none}
+  }
+</style>
+
+<div id="stage"><canvas id="game"></canvas></div>
+
+<div id="hud">
+  <div class="hud-top">
+    <div class="hud-box"><div class="hud-label">Snelheid</div><div class="hud-val"><span id="kmh">0</span> <small>km/u</small></div></div>
+    <div class="hud-box"><div class="hud-label" id="middenlabel">Noot 1</div><div class="hud-val" id="tijd">3,0</div></div>
+    <div class="hud-box"><div class="hud-label">Afstand</div><div class="hud-val"><span id="afstand">0</span> <small>m</small></div></div>
+  </div>
+  <div id="chant">BMW</div>
+  <div id="meter"><div id="meterfill"></div><div id="meterdot"></div></div>
+</div>
+
+<div id="aftel"></div>
+<div id="stadbanner"></div>
+
+<div class="overlay" id="start">
+  <h1>ZINGRACER</h1>
+  <p class="sub">Kies een auto en zing het merk: <b>BMwwwwww&hellip;</b> Hoe hoger je zingt, hoe harder hij gaat.<br>
+  <b>Noot 1 hou je 3 sec vol, dan 5, dan 7,5&hellip;</b> Tussendoor heb je 3 sec om adem te halen. Breekt je noot of ben je te laat, dan ben je af. Zo ver mogelijk komen!</p>
+  <div class="cars" id="cars"></div>
+  <p class="micnote" id="micnote"><span class="dot"></span><span id="mictekst">Je browser vraagt zo om je microfoon</span></p>
+  <button id="mictest">Test je microfoon</button>
+  <div id="testpaneel" class="hidden">
+    <div class="testbalk"><div id="testvol"></div></div>
+    <div class="testinfo">
+      <span id="testtoon">&mdash;</span>
+      <span id="testkmh">zing iets&hellip;</span>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="eind">
+  <div class="record" id="recordlabel" style="visibility:hidden">Nieuw record!</div>
+  <div class="score"><span id="eindscore">0</span><small> m</small></div>
+  <p class="sub" id="eindreden"></p>
+  <div class="stats">
+    <div><b id="stat-rondes">0</b>noten gehaald</div>
+    <div><b id="stat-top">0</b>topsnelheid</div>
+    <div><b id="stat-noot">0,0 s</b>langste noot</div>
+    <div><b id="stat-hs">0</b>record</div>
+  </div>
+  <div class="knoppen">
+    <button class="primair" id="opnieuw">Nog een keer</button>
+    <button id="andereauto">Andere auto</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ---------- merken ---------- */
+const MERKEN = [
+  { id:'bmw',      naam:'BMW',      chantBasis:'BM', rek:'W', kleur:'#1c69d4', kleurDonker:'#124a99', badge:'BMW' },
+  { id:'mercedes', naam:'Mercedes', chantBasis:'Mercede', rek:'S', kleur:'#c9ced6', kleurDonker:'#8f959f', badge:'MB' },
+  { id:'audi',     naam:'Audi',     chantBasis:'Aud', rek:'I', kleur:'#bb0a30', kleurDonker:'#83081f', badge:'AUDI' },
+  { id:'porsche',  naam:'Porsche',  chantBasis:'Porsch', rek:'E', kleur:'#ffcc00', kleurDonker:'#c49a00', badge:'911' },
+  { id:'skoda',    naam:'Skoda',    chantBasis:'Skod', rek:'A', kleur:'#4ba82e', kleurDonker:'#2f7a1e', badge:'SKODA' },
+];
+
+/* ---------- opslag ---------- */
+function leesHighscore(id){ try{ return parseInt(localStorage.getItem('zingracer-hs-'+id))||0; }catch(e){ return 0; } }
+function schrijfHighscore(id,v){ try{ localStorage.setItem('zingracer-hs-'+id, String(v)); }catch(e){} }
+
+/* ---------- auto tekenen (achterkant) ---------- */
+function tekenAuto(ctx, x, y, schaal, merk, remlicht){
+  // x,y = midden onderkant van de auto; schaal 1 = ~200px breed
+  const B = 200*schaal;           // breedte
+  const H = 120*schaal;           // hoogte
+  ctx.save();
+  ctx.translate(x, y);
+
+  // schaduw
+  ctx.fillStyle = 'rgba(0,0,0,.45)';
+  ctx.beginPath();
+  ctx.ellipse(0, 2*schaal, B*0.56, 12*schaal, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // wielen
+  ctx.fillStyle = '#0c0d10';
+  const wielB = B*0.13, wielH = H*0.30;
+  rrect(ctx, -B*0.52, -wielH, wielB, wielH, 4*schaal); ctx.fill();
+  rrect(ctx,  B*0.52-wielB, -wielH, wielB, wielH, 4*schaal); ctx.fill();
+
+  // carrosserie
+  const grad = ctx.createLinearGradient(0,-H,0,0);
+  grad.addColorStop(0, merk.kleur);
+  grad.addColorStop(1, merk.kleurDonker);
+  ctx.fillStyle = grad;
+  rrect(ctx, -B*0.48, -H*0.62, B*0.96, H*0.55, 14*schaal); ctx.fill();
+
+  // dak + achterruit
+  ctx.fillStyle = merk.kleurDonker;
+  rrect(ctx, -B*0.34, -H, B*0.68, H*0.48, 16*schaal); ctx.fill();
+  ctx.fillStyle = '#151a26';
+  rrect(ctx, -B*0.30, -H*0.94, B*0.60, H*0.34, 10*schaal); ctx.fill();
+
+  // achterlichten per merk
+  ctx.fillStyle = remlicht ? '#ff3b2f' : '#a8241c';
+  ctx.shadowColor = remlicht ? 'rgba(255,60,40,.9)' : 'rgba(255,60,40,.35)';
+  ctx.shadowBlur = remlicht ? 22*schaal : 8*schaal;
+  if(merk.id==='audi' || merk.id==='porsche'){
+    rrect(ctx, -B*0.42, -H*0.55, B*0.84, H*0.075, 4*schaal); ctx.fill(); // doorlopende lichtbalk
+  } else if(merk.id==='mercedes'){
+    rrect(ctx, -B*0.44, -H*0.56, B*0.26, H*0.10, 5*schaal); ctx.fill();
+    rrect(ctx,  B*0.18, -H*0.56, B*0.26, H*0.10, 5*schaal); ctx.fill();
+  } else { // bmw: twee L-vormen
+    rrect(ctx, -B*0.44, -H*0.56, B*0.20, H*0.09, 4*schaal); ctx.fill();
+    rrect(ctx,  B*0.24, -H*0.56, B*0.20, H*0.09, 4*schaal); ctx.fill();
+    rrect(ctx, -B*0.44, -H*0.50, B*0.08, H*0.14, 3*schaal); ctx.fill();
+    rrect(ctx,  B*0.36, -H*0.50, B*0.08, H*0.14, 3*schaal); ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+
+  // kentekenplaat + badge
+  ctx.fillStyle = '#e8e4d8';
+  rrect(ctx, -B*0.13, -H*0.34, B*0.26, H*0.12, 3*schaal); ctx.fill();
+  ctx.fillStyle = '#1a1206';
+  ctx.font = `700 ${Math.max(7, H*0.085)}px 'Barlow Condensed', sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(merk.badge, 0, -H*0.28);
+
+  // bumper
+  ctx.fillStyle = 'rgba(0,0,0,.28)';
+  rrect(ctx, -B*0.48, -H*0.16, B*0.96, H*0.10, 6*schaal); ctx.fill();
+
+  ctx.restore();
+}
+function rrect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+/* ---------- startscherm: autokaarten ---------- */
+const carsEl = document.getElementById('cars');
+MERKEN.forEach(merk=>{
+  const kaart = document.createElement('div');
+  kaart.className='carcard'; kaart.tabIndex=0; kaart.setAttribute('role','button');
+  const mini = document.createElement('canvas');
+  mini.width=220; mini.height=156;
+  kaart.appendChild(mini);
+  const naam=document.createElement('div'); naam.className='naam'; naam.textContent=merk.naam;
+  const chant=document.createElement('div'); chant.className='chant';
+  chant.textContent='"'+merk.chantBasis+merk.rek.toLowerCase().repeat(6)+'"';
+  const hs=document.createElement('div'); hs.className='hs';
+  const record = leesHighscore(merk.id);
+  hs.textContent = record ? 'record '+record+' m' : 'nog geen record';
+  kaart.append(naam,chant,hs);
+  const mctx = mini.getContext('2d');
+  tekenAuto(mctx, 110, 140, 0.92, merk, false);
+  kaart.addEventListener('click', ()=>startSpel(merk));
+  kaart.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); startSpel(merk);} });
+  carsEl.appendChild(kaart);
+});
+
+/* ---------- audio / pitch ---------- */
+let audioCtx=null, analyser=null, audioBuf=null, micKlaar=false;
+
+async function initMic(){
+  if(micKlaar) return true;
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio:{ echoCancellation:false, noiseSuppression:false, autoGainControl:false }
+    });
+    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const bron = audioCtx.createMediaStreamSource(stream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 1024;
+    bron.connect(analyser);
+    audioBuf = new Float32Array(analyser.fftSize);
+    micKlaar = true;
+    const note = document.getElementById('micnote');
+    note.classList.add('ok');
+    document.getElementById('mictekst').textContent='Microfoon staat aan. Zing maar!';
+    return true;
+  }catch(e){
+    let uitleg = 'Geen toegang tot de microfoon ('+e.name+').';
+    if(e.name==='NotAllowedError' || e.name==='SecurityError'){
+      uitleg += ' Deze omgeving blokkeert de mic mogelijk, of je hebt hem geweigerd. Probeer de game via localhost of sta de mic toe en herlaad.';
+    } else if(e.name==='NotFoundError'){
+      uitleg = 'Geen microfoon gevonden op dit apparaat.';
+    }
+    document.getElementById('mictekst').textContent = uitleg;
+    return false;
+  }
+}
+
+// autocorrelatie (ACF2+), geeft frequentie in Hz of -1
+function detecteerPitch(buf, sampleRate){
+  let n = buf.length, rms = 0;
+  for(let i=0;i<n;i++) rms += buf[i]*buf[i];
+  rms = Math.sqrt(rms/n);
+  if(rms < 0.015) return {freq:-1, rms};
+
+  let r1=0, r2=n-1, drempel=0.2;
+  for(let i=0;i<n/2;i++) if(Math.abs(buf[i])<drempel){ r1=i; break; }
+  for(let i=1;i<n/2;i++) if(Math.abs(buf[n-i])<drempel){ r2=n-i; break; }
+  const deel = buf.slice(r1,r2); n = deel.length;
+  if(n < 64) return {freq:-1, rms};
+
+  const c = new Float32Array(n);
+  for(let i=0;i<n;i++)
+    for(let j=0;j<n-i;j++)
+      c[i] += deel[j]*deel[j+i];
+
+  let d=0; while(d<n-1 && c[d]>c[d+1]) d++;
+  let maxpos=-1, maxval=-1;
+  for(let i=d;i<n;i++) if(c[i]>maxval){ maxval=c[i]; maxpos=i; }
+  if(maxpos<=0) return {freq:-1, rms};
+  let T0 = maxpos;
+  const x1=c[T0-1], x2=c[T0], x3=c[T0+1]||x2;
+  const a=(x1+x3-2*x2)/2, b=(x3-x1)/2;
+  if(a) T0 = T0 - b/(2*a);
+  const freq = sampleRate/T0;
+  if(freq<70 || freq>900) return {freq:-1, rms};
+  return {freq, rms};
+}
+
+/* ---------- microfoontest ---------- */
+const NOTEN = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+function noteNaam(f){
+  const n = Math.round(12*Math.log2(f/440))+69; // midi
+  return NOTEN[((n%12)+12)%12] + (Math.floor(n/12)-1);
+}
+let testActief = false;
+const mictestKnop = document.getElementById('mictest'),
+      testpaneel = document.getElementById('testpaneel'),
+      testvol = document.getElementById('testvol'),
+      testtoon = document.getElementById('testtoon'),
+      testkmh = document.getElementById('testkmh');
+
+mictestKnop.addEventListener('click', async ()=>{
+  if(testActief){ stopMicTest(); return; }
+  const ok = await initMic();
+  if(!ok) return;
+  if(audioCtx.state==='suspended') await audioCtx.resume();
+  testActief = true;
+  mictestKnop.textContent = 'Stop de test';
+  testpaneel.classList.remove('hidden');
+  testLus();
+});
+function stopMicTest(){
+  testActief = false;
+  mictestKnop.textContent = 'Test je microfoon';
+  testpaneel.classList.add('hidden');
+}
+function testLus(){
+  if(!testActief) return;
+  analyser.getFloatTimeDomainData(audioBuf);
+  const {freq, rms} = detecteerPitch(audioBuf, audioCtx.sampleRate);
+  testvol.style.width = Math.min(100, rms*900) + '%';
+  if(freq>0){
+    testtoon.textContent = noteNaam(freq) + ' · ' + Math.round(freq) + ' Hz';
+    testkmh.textContent = Math.round(pitchNaarSnelheid(freq)) + ' km/u';
+  } else {
+    testtoon.textContent = '—';
+    testkmh.textContent = rms>0.005 ? 'iets harder…' : 'zing iets…';
+  }
+  requestAnimationFrame(testLus);
+}
+
+/* ---------- speltoestand ---------- */
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+let DPR=1, W=0, Hh=0;
+function resize(){
+  DPR = Math.min(window.devicePixelRatio||1, 2);
+  W = window.innerWidth; Hh = window.innerHeight;
+  canvas.width = W*DPR; canvas.height = Hh*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+const SPEL = {
+  actief:false, merk:null,
+  snelheid:0, doel:0,          // km/u
+  afstand:0,                   // m
+  modus:'adem', ronde:0,       // 'noot' = vasthouden, 'adem' = pauze
+  nootTijd:0, stilte:0, adem:5, stadPrev:false,
+  zingt:false, pitch:0, pitchGlad:0,
+  nootStart:0, langsteNoot:0, topsnelheid:0,
+  wiebel:0, laatsteT:0,
+};
+function nootDoel(r){ return r===0 ? 3 : r===1 ? 5 : 7.5 + (r-2)*2.5; }
+
+/* route langs de A2 */
+const STEDEN = ['Utrecht','Amsterdam','Haarlem','Den Haag','Rotterdam','Eindhoven','Maastricht'];
+const STAD_INTERVAL = 2000, STAD_BREED = 500;   // stad om de 2 km, ±250 m breed
+function volgendeStad(afst){
+  const i = Math.floor(afst/STAD_INTERVAL);
+  return { naam: STEDEN[i%STEDEN.length], pos: (i+1)*STAD_INTERVAL };
+}
+function inStad(afst){
+  if(afst < STAD_INTERVAL - STAD_BREED/2) return false;
+  const d = ((afst % STAD_INTERVAL) + STAD_INTERVAL) % STAD_INTERVAL;
+  return d > STAD_INTERVAL - STAD_BREED/2 || d < STAD_BREED/2;
+}
+function stadNaamBij(afst){
+  const k = Math.round(afst/STAD_INTERVAL);
+  return STEDEN[((k-1)%STEDEN.length+STEDEN.length)%STEDEN.length];
+}
+
+const kmhEl=document.getElementById('kmh'), tijdEl=document.getElementById('tijd'),
+      middenlabel=document.getElementById('middenlabel'),
+      stadbannerEl=document.getElementById('stadbanner');
+let bannerTimer=null;
+const
+      afstandEl=document.getElementById('afstand'), chantEl=document.getElementById('chant'),
+      meterfill=document.getElementById('meterfill'), meterdot=document.getElementById('meterdot');
+
+const F_MIN=85, F_MAX=650, V_MIN=55, V_MAX=250;
+function pitchNaarSnelheid(f){
+  const t = Math.min(1, Math.max(0, (Math.log(f)-Math.log(F_MIN)) / (Math.log(F_MAX)-Math.log(F_MIN))));
+  return V_MIN + t*(V_MAX-V_MIN);
+}
+
+async function startSpel(merk){
+  stopMicTest();
+  const ok = await initMic();
+  if(!ok) return;
+  if(audioCtx.state==='suspended') await audioCtx.resume();
+  SPEL.merk = merk;
+  document.getElementById('start').classList.add('hidden');
+  document.getElementById('eind').classList.add('hidden');
+  document.getElementById('hud').classList.add('on');
+  chantEl.textContent = merk.chantBasis;
+  chantEl.classList.remove('zingt');
+
+  // aftellen
+  const aftel = document.getElementById('aftel');
+  aftel.style.display='flex';
+  const stappen=['3','2','1','ZING!'];
+  let i=0;
+  aftel.textContent=stappen[0];
+  const iv = setInterval(()=>{
+    i++;
+    if(i>=stappen.length){ clearInterval(iv); aftel.style.display='none'; echtStarten(); }
+    else aftel.textContent=stappen[i];
+  }, 700);
+}
+
+function echtStarten(){
+  Object.assign(SPEL,{ actief:true, snelheid:0, doel:0, afstand:0,
+    modus:'adem', ronde:0, nootTijd:0, stilte:0, adem:5, stadPrev:false,
+    zingt:false, pitch:0, pitchGlad:0, nootStart:0, langsteNoot:0, topsnelheid:0,
+    wiebel:0, laatsteT:performance.now() });
+  requestAnimationFrame(lus);
+}
+
+function eindeSpel(reden){
+  SPEL.actief=false;
+  document.getElementById('hud').classList.remove('on');
+  const m = Math.round(SPEL.afstand);
+  const oud = leesHighscore(SPEL.merk.id);
+  const record = m>oud;
+  if(record) schrijfHighscore(SPEL.merk.id, m);
+  document.getElementById('eindscore').textContent = m;
+  document.getElementById('recordlabel').style.visibility = record?'visible':'hidden';
+  document.getElementById('eindreden').textContent =
+    reden==='noot' ? 'Je noot brak te vroeg. Noot '+(SPEL.ronde+1)+' ('+nootDoel(SPEL.ronde).toFixed(1).replace('.',',')+' s) was te veel.' :
+    'Te lang adem gehaald. Noot '+(SPEL.ronde+1)+' kwam niet meer.';
+  document.getElementById('stat-rondes').textContent = SPEL.ronde;
+  document.getElementById('stat-top').textContent = Math.round(SPEL.topsnelheid)+' km/u';
+  document.getElementById('stat-noot').textContent = SPEL.langsteNoot.toFixed(1).replace('.',',')+' s';
+  document.getElementById('stat-hs').textContent = Math.max(m,oud)+' m';
+  document.getElementById('eind').classList.remove('hidden');
+}
+document.getElementById('opnieuw').addEventListener('click', ()=>startSpel(SPEL.merk));
+document.getElementById('andereauto').addEventListener('click', ()=>{
+  document.getElementById('eind').classList.add('hidden');
+  // records op de kaarten verversen
+  document.querySelectorAll('.carcard .hs').forEach((el,i)=>{
+    const r = leesHighscore(MERKEN[i].id);
+    el.textContent = r ? 'record '+r+' m' : 'nog geen record';
+  });
+  document.getElementById('start').classList.remove('hidden');
+});
+
+/* ---------- spellus ---------- */
+function lus(t){
+  if(!SPEL.actief) return;
+  const dt = Math.min(0.05, (t-SPEL.laatsteT)/1000);
+  SPEL.laatsteT = t;
+
+  // audio
+  analyser.getFloatTimeDomainData(audioBuf);
+  const {freq} = detecteerPitch(audioBuf, audioCtx.sampleRate);
+  const zongNet = SPEL.zingt;
+  SPEL.zingt = freq>0;
+  if(SPEL.zingt){
+    SPEL.pitchGlad = SPEL.pitchGlad ? SPEL.pitchGlad*0.7 + freq*0.3 : freq;
+    SPEL.doel = pitchNaarSnelheid(SPEL.pitchGlad);
+    if(!zongNet) SPEL.nootStart = t;
+    SPEL.langsteNoot = Math.max(SPEL.langsteNoot, (t-SPEL.nootStart)/1000);
+  } else {
+    SPEL.doel = 0;
+    SPEL.pitchGlad = 0;
+  }
+
+  // rondelogica: noot vasthouden of adempauze
+  const doelNoot = nootDoel(SPEL.ronde);
+  if(SPEL.modus==='adem'){
+    SPEL.adem -= dt;
+    if(SPEL.zingt){
+      SPEL.modus='noot'; SPEL.nootTijd=0; SPEL.stilte=0;
+    } else if(SPEL.adem<=0){ eindeSpel('adem'); return; }
+  } else {
+    if(SPEL.zingt){
+      SPEL.nootTijd += dt; SPEL.stilte = 0;
+    } else {
+      SPEL.stilte += dt;               // korte hapering vergeven (pitchdetectie flikkert)
+      if(SPEL.stilte > 0.35){ eindeSpel('noot'); return; }
+    }
+    if(SPEL.nootTijd >= doelNoot){
+      SPEL.ronde++;
+      SPEL.modus='adem';
+      SPEL.adem = 3.0;
+    }
+  }
+
+  // snelheid: optrekken naar doel, uitrollen bij stilte
+  if(SPEL.zingt){
+    const dv = SPEL.doel - SPEL.snelheid;
+    SPEL.snelheid += dv * Math.min(1, dt*2.2);
+  } else {
+    SPEL.snelheid = Math.max(0, SPEL.snelheid - 55*dt);
+  }
+  SPEL.topsnelheid = Math.max(SPEL.topsnelheid, SPEL.snelheid);
+  SPEL.afstand += SPEL.snelheid/3.6*dt;
+  SPEL.wiebel += dt * (SPEL.zingt ? 0.5 : 2.2);
+
+  // stadsbanner bij binnenrijden
+  const nuInStad = inStad(SPEL.afstand);
+  if(nuInStad && !SPEL.stadPrev){
+    stadbannerEl.textContent = stadNaamBij(SPEL.afstand);
+    stadbannerEl.classList.add('zichtbaar');
+    clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(()=>stadbannerEl.classList.remove('zichtbaar'), 2500);
+  }
+  SPEL.stadPrev = nuInStad;
+
+  // HUD
+  kmhEl.textContent = Math.round(SPEL.snelheid);
+  afstandEl.textContent = Math.round(SPEL.afstand);
+  if(SPEL.modus==='noot'){
+    middenlabel.textContent = 'Noot '+(SPEL.ronde+1)+' · hou vol';
+    const rest = Math.max(0, doelNoot - SPEL.nootTijd);
+    tijdEl.textContent = rest.toFixed(1).replace('.',',');
+    tijdEl.classList.toggle('warn', SPEL.stilte>0.05);
+  } else {
+    middenlabel.textContent = SPEL.ronde===0 ? 'Zing om te starten' : 'Adem halen!';
+    tijdEl.textContent = Math.max(0,SPEL.adem).toFixed(1).replace('.',',');
+    tijdEl.classList.toggle('warn', SPEL.adem<1.2);
+  }
+
+  // chant-tekst rekt mee met de noot
+  if(SPEL.zingt){
+    const duurNoot = (t-SPEL.nootStart)/1000;
+    const rekN = Math.min(24, 1+Math.floor(duurNoot*7));
+    chantEl.textContent = SPEL.merk.chantBasis + SPEL.merk.rek.toLowerCase().repeat(rekN);
+    chantEl.classList.add('zingt');
+  } else {
+    chantEl.classList.remove('zingt');
+  }
+
+  // pitchmeter
+  if(SPEL.zingt){
+    const p = Math.min(1, Math.max(0,(Math.log(SPEL.pitchGlad)-Math.log(F_MIN))/(Math.log(F_MAX)-Math.log(F_MIN))));
+    meterfill.style.height = (p*100)+'%';
+    meterdot.style.bottom = (p*100)+'%';
+    meterdot.style.opacity = 1;
+  } else {
+    meterfill.style.height = '0%';
+    meterdot.style.opacity = 0;
+  }
+
+  teken(t);
+
+  requestAnimationFrame(lus);
+}
+
+/* ---------- renderen: zonnige snelweg (A2-stijl) ---------- */
+function teken(t){
+  const horizonY = Hh*0.36;
+  const bodemH  = Hh - horizonY;
+  const zNear   = 7;                          // meters bij de onderrand
+  const roadHalfM = 7.5;                      // halve wegbreedte (3 rijstroken)
+  const bottomHalfPx = Math.min(W*0.44, bodemH*1.4);
+  const pxPerM = bottomHalfPx / roadHalfM;    // pixels per meter op p=1
+  const pMin = 0.035;
+
+  /* lucht */
+  const lucht = ctx.createLinearGradient(0,0,0,horizonY);
+  lucht.addColorStop(0,'#2e6ccc');
+  lucht.addColorStop(0.7,'#6fa3e0');
+  lucht.addColorStop(1,'#b8d2ee');
+  ctx.fillStyle=lucht; ctx.fillRect(0,0,W,horizonY+1);
+
+  /* wolken: langzame drift + heel licht mee met het rijden */
+  const drift = t*0.006 + SPEL.afstand*0.15;
+  ctx.fillStyle='rgba(255,255,255,.92)';
+  for(let i=0;i<6;i++){
+    const spd = 0.25 + ((i*37)%10)/28;
+    const wx = (((i*258.7 - drift*spd) % (W+340)) + (W+340)) % (W+340) - 170;
+    const wy = 18 + ((i*97)%Math.max(40,Math.floor(horizonY*0.55)));
+    const s = 0.7 + ((i*53)%10)/11;
+    ctx.beginPath();
+    ctx.ellipse(wx,       wy,       46*s, 16*s, 0, 0, Math.PI*2);
+    ctx.ellipse(wx+32*s,  wy-10*s,  30*s, 13*s, 0, 0, Math.PI*2);
+    ctx.ellipse(wx-34*s,  wy-6*s,   26*s, 11*s, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  /* grond: per rij gras + asfalt + belijning */
+  const stap = 2;
+  for(let y=horizonY; y<Hh; y+=stap){
+    const p = (y - horizonY + 1)/bodemH;
+    const z = zNear/p;
+    const wereld = SPEL.afstand + z;
+    const band = Math.floor(wereld/8)%2;
+    if(inStad(wereld)) ctx.fillStyle = band ? '#a6aab0' : '#9ea2a8';   // klinkers in de stad
+    else ctx.fillStyle = band ? '#4f9138' : '#468231';
+    ctx.fillRect(0,y,W,stap);
+    const half = bottomHalfPx*p;
+    ctx.fillStyle = band ? '#95999f' : '#8d9198';
+    ctx.fillRect(W/2-half, y, half*2, stap);
+    ctx.fillStyle='#f4f4ee';
+    const rand = Math.max(1, half*0.03);
+    ctx.fillRect(W/2-half, y, rand, stap);
+    ctx.fillRect(W/2+half-rand, y, rand, stap);
+    if(Math.floor(wereld/6)%2===0){
+      const lw = Math.max(1, half*0.022);
+      ctx.fillRect(W/2-half/3-lw/2, y, lw, stap);
+      ctx.fillRect(W/2+half/3-lw/2, y, lw, stap);
+    }
+  }
+
+  /* decor: flats en bomen, ver → dichtbij */
+  function tekenFlat(x,yBase,p,seed){
+    const ppm = pxPerM*p;
+    const w = 13*ppm, h = (15 + (seed%3)*6)*ppm;
+    const gx = x - w/2;
+    ctx.fillStyle='#aeb4bd';
+    ctx.fillRect(gx, yBase-h, w, h);
+    ctx.fillStyle='#878d96';
+    ctx.fillRect(gx, yBase-h, w, Math.max(1,0.8*ppm));
+    if(ppm>2.2){
+      ctx.fillStyle='#41546b';
+      const kols=4, rijenN=Math.max(2, Math.floor(h/(2.8*ppm)));
+      for(let r=0;r<rijenN;r++)
+        for(let c=0;c<kols;c++)
+          ctx.fillRect(gx + (0.9+c*3.1)*ppm, yBase-h + (1.6+r*2.8)*ppm, 1.7*ppm, 1.3*ppm);
+    }
+  }
+  function tekenBoom(x,yBase,p,seed){
+    const ppm = pxPerM*p;
+    ctx.fillStyle='#6b4a2f';
+    ctx.fillRect(x-0.25*ppm, yBase-2.2*ppm, Math.max(1,0.5*ppm), 2.2*ppm);
+    ctx.fillStyle = (seed%2) ? '#2f7a3c' : '#35893f';
+    ctx.beginPath();
+    ctx.arc(x,          yBase-3.4*ppm, 1.9*ppm, 0, Math.PI*2);
+    ctx.arc(x-1.1*ppm,  yBase-2.6*ppm, 1.3*ppm, 0, Math.PI*2);
+    ctx.arc(x+1.1*ppm,  yBase-2.6*ppm, 1.3*ppm, 0, Math.PI*2);
+    ctx.fill();
+  }
+  const decorAfstand = 42;
+  const kEerste = Math.ceil((SPEL.afstand + zNear)/decorAfstand);
+  for(let k=kEerste+8; k>=kEerste; k--){
+    const wereldZ = k*decorAfstand;
+    if(inStad(wereldZ)) continue;               // stad heeft eigen bebouwing
+    const rel = wereldZ - SPEL.afstand;
+    if(rel < zNear) continue;
+    const p = zNear/rel;
+    if(p < pMin) continue;
+    const y = horizonY + bodemH*p;
+    const kant = (k%2) ? 1 : -1;
+    const soort = (k%5===0) ? 'flat' : ((k%5===2 || k%5===4) ? 'boom' : 'geen');
+    if(soort==='geen') continue;
+    const x = W/2 + kant*((soort==='flat' ? 26 : 13)*pxPerM*p);
+    if(soort==='flat') tekenFlat(x,y,p,k); else tekenBoom(x,y,p,k);
+  }
+
+  /* stadsbebouwing: dichte flats aan beide kanten */
+  const stadAfstand = 24;
+  const sEerste = Math.ceil((SPEL.afstand + zNear)/stadAfstand);
+  for(let k=sEerste+11; k>=sEerste; k--){
+    const wereldZ = k*stadAfstand;
+    if(!inStad(wereldZ)) continue;
+    const rel = wereldZ - SPEL.afstand;
+    if(rel < zNear) continue;
+    const p = zNear/rel;
+    if(p < pMin) continue;
+    const y = horizonY + bodemH*p;
+    tekenFlat(W/2 - 16*pxPerM*p, y, p, k*3+1);
+    tekenFlat(W/2 + 16*pxPerM*p, y, p, k*5+2);
+  }
+
+  /* blauwe afstandsborden rechts van de weg */
+  function tekenBord(x, yBase, p, tekst){
+    const ppm = pxPerM*p;
+    const paalH = 2.6*ppm;
+    ctx.fillStyle='#8b9097';
+    ctx.fillRect(x-Math.max(1,0.08*ppm), yBase-paalH, Math.max(1.5,0.16*ppm), paalH);
+    ctx.font = `700 ${Math.max(4,0.75*ppm)}px 'Barlow Condensed', sans-serif`;
+    const tw = ctx.measureText(tekst).width;
+    const bw = Math.max(4.2*ppm, tw + 0.9*ppm), bh = 1.5*ppm;
+    const bx = x - bw/2, by = yBase - paalH - bh;
+    ctx.fillStyle='#1962ad';
+    rrect(ctx, bx, by, bw, bh, Math.min(6,0.18*ppm));
+    ctx.fill();
+    ctx.strokeStyle='#f4f4ee';
+    ctx.lineWidth=Math.max(1,0.06*ppm);
+    ctx.stroke();
+    if(ppm>2.4){
+      ctx.fillStyle='#fff';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(tekst, x, by+bh/2+0.05*ppm);
+    }
+  }
+  const bordAfstand = 350;
+  for(let m=(Math.floor((SPEL.afstand+zNear/pMin)/bordAfstand))*bordAfstand+150; m>=SPEL.afstand+zNear; m-=bordAfstand){
+    const rel = m - SPEL.afstand;
+    const p = zNear/rel;
+    if(p < pMin || p > 1 || inStad(m)) continue;
+    const st = volgendeStad(m);
+    const km = Math.max(1, Math.round((st.pos - m)/200));
+    const y = horizonY + bodemH*p;
+    tekenBord(W/2 + (roadHalfM+3.2)*pxPerM*p, y, p, st.naam+'  '+km);
+  }
+
+  /* portalen boven de weg */
+  function tekenPortaal(p, tekst){
+    const ppm = pxPerM*p;
+    const y = horizonY + bodemH*p;
+    const xL = W/2 - (roadHalfM+1.7)*ppm, xR = W/2 + (roadHalfM+1.7)*ppm;
+    const h = 6.4*ppm;
+    ctx.fillStyle='#9ba1a9';
+    const pw = Math.max(1.5,0.3*ppm);
+    ctx.fillRect(xL-pw/2, y-h, pw, h);
+    ctx.fillRect(xR-pw/2, y-h, pw, h);
+    ctx.fillRect(xL, y-h, xR-xL, Math.max(1.5,0.5*ppm));
+    ctx.font = `700 ${Math.max(4,0.95*ppm)}px 'Barlow Condensed', sans-serif`;
+    const tw = ctx.measureText(tekst).width;
+    const bw = Math.max(7*ppm, tw + 1.4*ppm), bh = 2.2*ppm;
+    const bx = W/2 - bw/2, by = y - h + 0.55*ppm;
+    ctx.fillStyle='#1962ad';
+    rrect(ctx, bx, by, bw, bh, Math.min(6,0.2*ppm));
+    ctx.fill();
+    ctx.strokeStyle='#f4f4ee';
+    ctx.lineWidth=Math.max(1,0.07*ppm);
+    ctx.stroke();
+    if(ppm>2){
+      ctx.fillStyle='#fff';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(tekst, W/2, by+bh/2+0.06*ppm);
+    }
+  }
+  const portaalAfstand = 1000;
+  for(let m=(Math.floor((SPEL.afstand+zNear/pMin)/portaalAfstand))*portaalAfstand+500; m>=SPEL.afstand+zNear; m-=portaalAfstand){
+    const rel = m - SPEL.afstand;
+    const p = zNear/rel;
+    if(p < pMin || p > 1 || inStad(m)) continue;
+    tekenPortaal(p, 'A2  '+volgendeStad(m).naam);
+  }
+
+  /* vangrails met paaltjes */
+  const railOff = roadHalfM + 1.1;
+  // paaltjes eerst (staan achter de railplank)
+  ctx.fillStyle='#7f858e';
+  const paalAfstand = 13;
+  for(let m=Math.ceil((SPEL.afstand+zNear)/paalAfstand)*paalAfstand; ; m+=paalAfstand){
+    const rel = m - SPEL.afstand;
+    const p = zNear/rel;
+    if(p < pMin) break;
+    const y = horizonY + bodemH*p;
+    const pw = Math.max(1.5, 0.18*pxPerM*p);
+    [-1,1].forEach(kant=>{
+      const x = W/2 + kant*railOff*pxPerM*p;
+      ctx.fillRect(x-pw/2, y-0.5*pxPerM*p, pw, 0.5*pxPerM*p);
+    });
+  }
+  [-1,1].forEach(kant=>{
+    const N=26;
+    ctx.beginPath();
+    for(let j=0;j<=N;j++){
+      const p = pMin + (1-pMin)*(j/N);
+      const y = horizonY + bodemH*p;
+      const x = W/2 + kant*railOff*pxPerM*p;
+      j ? ctx.lineTo(x, y-0.85*pxPerM*p) : ctx.moveTo(x, y-0.85*pxPerM*p);
+    }
+    for(let j=N;j>=0;j--){
+      const p = pMin + (1-pMin)*(j/N);
+      const y = horizonY + bodemH*p;
+      const x = W/2 + kant*railOff*pxPerM*p;
+      ctx.lineTo(x, y-0.42*pxPerM*p);
+    }
+    ctx.closePath();
+    ctx.fillStyle='#c6cbd2';
+    ctx.fill();
+    ctx.strokeStyle='#9aa0a8';
+    ctx.lineWidth=1;
+    ctx.stroke();
+  });
+
+  /* heiigheid vlak bij de horizon, over alles heen */
+  const haze = ctx.createLinearGradient(0,horizonY,0,horizonY+bodemH*0.22);
+  haze.addColorStop(0,'rgba(184,210,238,.9)');
+  haze.addColorStop(1,'rgba(184,210,238,0)');
+  ctx.fillStyle=haze;
+  ctx.fillRect(0,horizonY,W,bodemH*0.22);
+
+  /* auto: zwabbert bij stilte, trilt bij topsnelheid */
+  const shake = SPEL.snelheid>180 ? Math.sin(t*0.06)*1.6 : 0;
+  const zwabber = SPEL.zingt ? 0 : Math.sin(SPEL.wiebel*3)*Math.min(26,SPEL.snelheid*0.35);
+  const schaal = Math.min(W,760)/760 * 1.05;
+  tekenAuto(ctx, W/2 - zwabber + shake, Hh*0.93, schaal, SPEL.merk, !SPEL.zingt && SPEL.snelheid>2);
+}
+
+/* startscherm-achtergrond: statische weg tekenen */
+(function idleTeken(){
+  if(!SPEL.actief){
+    SPEL.merk = SPEL.merk || MERKEN[0];
+    const bewaar = {afstand:SPEL.afstand, zingt:SPEL.zingt, snelheid:SPEL.snelheid, wiebel:SPEL.wiebel};
+    SPEL.zingt=true; SPEL.snelheid=0;
+    teken(performance.now());
+    Object.assign(SPEL,bewaar);
+  }
+  requestAnimationFrame(idleTeken);
+})();
+</script>
