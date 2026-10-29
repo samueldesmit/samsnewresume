@@ -8,8 +8,20 @@ import spriet from '../assets/spriet.jpg'
 import kassl from '../assets/kassl.webp'
 import graylabel from '../assets/gray label.webp'
 import laminaatEnParket from '../assets/laminaat-en-parket.webp'
+import marcInbane from '../assets/marc-inbane.webp'
+import royalDelft from '../assets/royal-delft.webp'
+import handsOff from '../assets/hands-off.webp'
+import claro from '../assets/claro.webp'
+import tcig from '../assets/tcig.webp'
+import renske from '../assets/renske.webp'
 
 const CASES = [
+  { title: 'Marc Inbane', img: marcInbane, url: 'https://www.marcinbane.com/', desc: 'Award-winning self-tan and skincare brand. Custom built international webshop with product finder, bundles and multiple languages.' },
+  { title: 'Royal Delft', img: royalDelft, url: 'https://royaldelft.com/', desc: 'Iconic Delft Blue pottery since 1653. Custom built webshop that brings centuries of craftsmanship to a modern online experience.' },
+  { title: 'Hands Off', img: handsOff, url: 'https://hands-off.com/', desc: 'Plant-based chocolate brand with a playful identity. Built on a shared multi-brand theme with bundles and seasonal campaigns.' },
+  { title: 'Claro', img: claro, url: 'https://clarochocolate.com/', desc: 'Organic, climate-positive chocolate with less sugar. Storytelling webshop on the same shared multi-brand theme.' },
+  { title: 'The Chocolate Impact Group', img: tcig, desc: 'B2B webshop for the group behind Chocolatemakers, Hands Off and Claro. One platform for wholesale ordering across all brands.' },
+  { title: 'Natuurlijk Renske', img: renske, url: 'https://natuurlijkrenske.nl/', desc: 'Natural pet food brand. Migrated to a new Shopify Horizon theme with a fresh design and all existing functionality carried over.' },
   { title: 'Chocolatemakers', img: chocolatemakers, url: 'https://chocolatemakers.com/', desc: 'Custom built artisan chocolate webshop with a warm and inviting design. Including product configurator for personalized chocolate packages.' },
   { title: 'Idyl', img: idyl, url: 'https://idyl.com/', desc: 'Fully custom premium jewelry webshop with sleek design and focus on user experience. Optimized for conversion.' },
   { title: 'Laminaat en Parket', img: laminaatEnParket, url: 'https://www.laminaatenparket.nl/', desc: 'Flooring specialist webshop for laminate and parquet. Custom built with focus on product selection and material samples.' },
@@ -40,17 +52,21 @@ export default function Work() {
             <p>A new project is in the works. Stay tuned...</p>
           </div>
         </div>
-        {CASES.map(c => (
-          <a key={c.title} href={c.url} target="_blank" rel="noopener noreferrer" className="case-card">
-            <div className="case-img-wrap">
-              <img src={c.img} alt={c.title} loading="lazy" />
-            </div>
-            <div className="case-info">
-              <h3>{c.title}</h3>
-              <p>{c.desc}</p>
-            </div>
-          </a>
-        ))}
+        {CASES.map(c => {
+          const Card = c.url ? 'a' : 'div'
+          const linkProps = c.url ? { href: c.url, target: '_blank', rel: 'noopener noreferrer' } : {}
+          return (
+            <Card key={c.title} {...linkProps} className="case-card">
+              <div className="case-img-wrap">
+                <img src={c.img} alt={c.title} loading="lazy" />
+              </div>
+              <div className="case-info">
+                <h3>{c.title}</h3>
+                <p>{c.desc}</p>
+              </div>
+            </Card>
+          )
+        })}
       </div>
     </div>
   )
