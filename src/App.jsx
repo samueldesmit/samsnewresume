@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 import About from './pages/About'
@@ -6,6 +6,8 @@ import Work from './pages/Work'
 import Contact from './pages/Contact'
 import Wekker from './pages/Wekker'
 import ZingRacer from './pages/ZingRacer'
+import Games from './pages/Games'
+import SlakkieSprint from './pages/SlakkieSprint'
 import NotFound from './pages/NotFound'
 import './App.css'
 
@@ -18,7 +20,10 @@ function App() {
         <Route path="work" element={<Work />} />
         <Route path="contact" element={<Contact />} />
         <Route path="wekker" element={<Wekker />} />
-        <Route path="zingracer" element={<ZingRacer />} />
+        <Route path="games" element={<Games />} />
+        <Route path="games/slakkie-sprint" element={<SlakkieSprint />} />
+        <Route path="games/zingracer" element={<ZingRacer />} />
+        <Route path="zingracer" element={<Navigate to="/games/zingracer" replace />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

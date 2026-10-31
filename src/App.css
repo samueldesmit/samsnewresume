@@ -122,7 +122,9 @@
 .page-about,
 .page-work,
 .page-contact,
-.page-wekker {
+.page-wekker,
+.page-games,
+.page-game {
   max-width: 1440px;
   margin: 0 auto;
   padding: 120px 32px 80px;
@@ -671,6 +673,45 @@
 
 @media (max-width: 700px) {
   .zingracer-frame {
+    height: 70vh;
+  }
+}
+
+/* ── Games ── */
+.game-back {
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+
+.game-back:hover {
+  color: #b4ff39;
+}
+
+.game-intro {
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 24px;
+  max-width: 60ch;
+}
+
+.game-frame {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  display: block;
+}
+
+.game-frame-wide {
+  aspect-ratio: 960 / 544;
+  max-height: 82vh;
+  background: #16251a;
+}
+
+@media (max-width: 700px) {
+  .game-frame-wide {
+    aspect-ratio: auto;
     height: 70vh;
   }
 }
