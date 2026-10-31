@@ -715,3 +715,51 @@
     height: 70vh;
   }
 }
+
+.game-intro-touch,
+.game-play-touch {
+  display: none;
+}
+
+.game-play-touch {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  text-decoration: none;
+}
+
+.game-play-touch img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 960 / 544;
+  object-fit: cover;
+}
+
+.game-play-touch span {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  background: #b4ff39;
+  color: #000;
+  font-weight: 700;
+  font-size: 20px;
+  padding: 12px 32px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Telefoon en tablet: spel los openen op het hele scherm */
+@media (pointer: coarse) {
+  .game-intro-desktop,
+  .game-frame-wide {
+    display: none;
+  }
+
+  .game-intro-touch,
+  .game-play-touch {
+    display: block;
+  }
+}
