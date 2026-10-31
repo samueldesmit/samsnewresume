@@ -307,7 +307,7 @@ function genLevel(n){
     const ax = x;
     for (let i = 0; i < 3; i++) { set(ax+6+i, 10, 6); set(ax+19+i, 10, 6); }
     flat(28);
-    L.boss = { x0:ax*TS, x1:(ax+28)*TS, floor:g*TS, x:(ax+20)*TS, y:-200, w:136, h:136, vx:0, vy:0, hp:3, st:'wait', t:0, hurt:0, active:false, dead:false, onGround:false, pucks:[], rot:0, face:-1 };
+    L.boss = { x0:ax*TS, x1:(ax+28)*TS, floor:g*TS, x:(ax+20)*TS, y:-200, w:136, h:136, vx:0, vy:0, hp:1, maxHp:1, st:'wait', t:0, hurt:0, active:false, dead:false, onGround:false, pucks:[], rot:0, face:-1 };
   }
   while (x < W) col(g);
   L.goalX = (W - 14) * TS; L.goalTop = g;
@@ -420,7 +420,7 @@ function updateBoss(dt, prevBottom){
   if (P.x < B.x0) { P.x = B.x0; P.vx = Math.max(0, P.vx); }
   if (P.x + P.w > B.x1) { P.x = B.x1 - P.w; P.vx = Math.min(0, P.vx); }
   B.t += dt; if (B.hurt > 0) B.hurt -= dt;
-  const speedUp = 4 - B.hp; // 1, 2, 3
+  const speedUp = 1 + (B.maxHp - B.hp);
   const landed = () => {
     B.y = B.floor - B.h; B.vy = 0; B.vx = 0; B.onGround = true;
     shake = 0.35; sfx.thud();
@@ -434,7 +434,7 @@ function updateBoss(dt, prevBottom){
     B.face = P.x + P.w/2 < B.x + B.w/2 ? -1 : 1;
     if (B.t > 1.3 - speedUp*0.25) {
       B.st = 'jump'; B.t = 0; B.onGround = false;
-      const big = B.hp === 1 && Math.random() < 0.5;
+      const big = B.maxHp > 1 && B.hp === 1 && Math.random() < 0.5;
       B.vy = big ? -1150 : -880 - speedUp*40;
       const air = 2 * -B.vy / G;
       B.vx = clamp((P.x + P.w/2 - (B.x + B.w/2)) / air, -380, 380);
@@ -959,7 +959,7 @@ function drawHUD(){
   txt('BEST ' + fmt(Math.max(bestScore(), score)), VW - 16, 23, 22, '#9fe8ff', 'right');
   if (L && L.boss && L.boss.active && !L.boss.dead) {
     txt('EINDBAAS', VW/2 - 40, 66, 20, '#ff5c5c', 'right');
-    for (let i = 0; i < 3; i++) { ctx.fillStyle = i < L.boss.hp ? '#ff4f4f' : 'rgba(0,0,0,.3)'; ctx.fillRect(VW/2 - 30 + i*40, 56, 34, 18); }
+    for (let i = 0; i < L.boss.maxHp; i++) { ctx.fillStyle = i < L.boss.hp ? '#ff4f4f' : 'rgba(0,0,0,.3)'; ctx.fillRect(VW/2 - 30 + i*40, 56, 34, 18); }
   }
   if (muted) txt('GELUID UIT (M)', VW - 16, 62, 15, '#fff', 'right');
 }
