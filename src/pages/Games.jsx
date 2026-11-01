@@ -3,7 +3,7 @@ import slakkieSprint from '../assets/game-slakkie-sprint.jpg'
 import zingRacer from '../assets/game-zingracer.jpg'
 
 const GAMES = [
-  { title: 'Slakkie Sprint', to: '/games/slakkie-sprint', img: slakkieSprint, desc: 'Spring als slak over blokken, kevers en egels, met de stem van Fender. Hoe ver kom jij? Met eindbaas en highscores.' },
+  { title: 'Slakkie Sprint', to: '/games/slakkie-sprint', img: slakkieSprint, desc: 'Spring als slak over blokken, kevers en egels. Kies de stem van Fender, Mat of Lewis. Hoe ver kom jij? Met eindbaas en highscores.' },
   { title: 'ZingRacer', to: '/games/zingracer', img: zingRacer, desc: 'Kies een auto en zing het merk. Hoe hoger je zingt, hoe harder hij gaat. Je hebt je microfoon nodig.' },
 ]
 
