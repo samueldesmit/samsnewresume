@@ -11,11 +11,11 @@ export default function SlakkieSprint() {
       <h1 className="page-title">Slakkie Sprint</h1>
       <p className="game-intro game-intro-desktop">
         Pijltjes of A/D om te lopen, spatie of W om te springen. Zet het geluid aan: als de slak loopt,
-        hoor je Fender. Met de knop rechtsboven in het spel speel je op het volledige scherm.
+        hoor je Fender, Mat of Lewis (kies op het startscherm). Met de knop rechtsboven in het spel speel je op het volledige scherm.
       </p>
       <p className="game-intro game-intro-touch">
-        Draai je telefoon een kwartslag en speel met de knoppen in beeld. Zet het geluid aan: als de slak
-        loopt, hoor je Fender.
+        Draai je telefoon een kwartslag en speel met de knoppen in beeld. Zet het geluid aan en kies op het
+        startscherm de stem van Fender, Mat of Lewis.
       </p>
       <a className="game-play-touch" href="/slakkiesprint.html">
         <img src={cover} alt="Slakkie Sprint" />
